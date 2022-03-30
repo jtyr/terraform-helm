@@ -1,13 +1,11 @@
-
 Thank you for installing HashiCorp Terraform Cloud Operator!
 
-Now that you have deployed HashiCorp Terraform Cloud Operator, you should look over the docs on using 
-Terraform with Kubernetes available here: 
+Now that you have deployed HashiCorp Terraform Cloud Operator, you should look
+over the docs on using  Terraform with Kubernetes available here:
 
 https://github.com/hashicorp/terraform-k8s/blob/master/README.md
 
-
 Your release is named {{ .Release.Name }}. To learn more about the release, try:
 
-  $ helm status {{ .Release.Name }}
-  $ helm get {{ .Release.Name }}
+  $ helm status {{ .Release.Name }} -n {{ .Release.Namespace }}
+  $ helm get all {{ .Release.Name }} -n {{ .Release.Namespace }}

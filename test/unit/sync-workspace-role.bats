@@ -14,7 +14,7 @@ load _helpers
 @test "syncWorkspace/Role: disabled with global.enabled=false" {
   cd `chart_dir`
   local actual=$(helm template \
-      --show-only templates/sync-workspace-role.yaml 
+      --show-only templates/sync-workspace-role.yaml
       --set 'global.enabled=false' \
       . | tee /dev/stderr |
       yq 'length > 0' | tee /dev/stderr)
@@ -24,7 +24,7 @@ load _helpers
 @test "syncWorkspace/Role: disabled with sync disabled" {
   cd `chart_dir`
   local actual=$(helm template \
-      --show-only templates/sync-workspace-role.yaml  
+      --show-only templates/sync-workspace-role.yaml
       --set 'syncWorkspace.enabled=false' \
       . | tee /dev/stderr |
       yq 'length > 0' | tee /dev/stderr)

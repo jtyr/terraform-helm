@@ -14,7 +14,7 @@ helm_install() {
         kubectl create secret generic terraformrc --from-file=credentials=${HOME}/.terraformrc
     fi
 
-    kubectl create secret generic workspacesecrets 
+    kubectl create secret generic workspacesecrets
 
     local values="${BATS_TEST_DIRNAME}/values.yaml"
     if [ ! -f "${values}" ]; then

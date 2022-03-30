@@ -12,24 +12,24 @@ spec:
     spec:
       restartPolicy: Never
       containers:
-      - name: greetings
-        image: joatmon08/aws-sqs-test
-        command: ["./message.sh"]
-        env:
-          - name: QUEUE_URL
-            valueFrom:
-              configMapKeyRef:
-                name: greetings-outputs
-                key: url
-          - name: AWS_DEFAULT_REGION
-            valueFrom:
-              configMapKeyRef:
-                name: aws-configuration
-                key: region
-        volumeMounts:
-          - name: sensitivevars
-            mountPath: "/tmp/secrets"
-            readOnly: true
+        - name: greetings
+          image: joatmon08/aws-sqs-test
+          command: ["./message.sh"]
+          env:
+            - name: QUEUE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: greetings-outputs
+                  key: url
+            - name: AWS_DEFAULT_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: aws-configuration
+                  key: region
+          volumeMounts:
+            - name: sensitivevars
+              mountPath: "/tmp/secrets"
+              readOnly: true
       volumes:
         - name: sensitivevars
           secret:

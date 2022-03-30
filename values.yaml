@@ -11,7 +11,7 @@ global:
   # imageK8S is the name (and tag) of the terraform-k8s Docker image that
   # is used for functionality such as workspace sync. This can be overridden
   # per component.
-  imageK8S: "hashicorp/terraform-k8s:1.1.0"
+  imageK8S: ghcr.io/finastra-platform/tfco:v0.2.0
 
 # syncWorkspace will run the workspace sync process to sync K8S Workspaces with
 # Terraform Cloud workspaces.
@@ -29,6 +29,10 @@ syncWorkspace:
   # the operator has to do. It can be used when connecting to TFE instances with
   # self-signed certificates
   insecure: false
+
+  # If true watchAllNamespaces will configure the operator to watch for workspace
+  # changes across all kubernetes namespaces.
+  watchAllNamespaces: false
 
   # k8WatchNamespace is the Kubernetes namespace to watch for workspace
   # changes and sync to Terraform Cloud. If this is not set then it will default
@@ -50,14 +54,20 @@ syncWorkspace:
   # logLevel: error
 
   # Name and key of Kubernetes secret containing the Terraform CLI Configuration
-  # Must have Terraform Cloud Team API Token 
+  # Must have Terraform Cloud Team API Token
   terraformRC:
     secretName: terraformrc
     secretKey: credentials
 
-  # Name of Kubernetes secret containing keys and values of sensitive variables 
+  # Name of Kubernetes secret containing keys and values of sensitive variables
   sensitiveVariables:
     secretName: workspacesecrets
+
+  # Image pull policy
+  imagePullPolicy: IfNotPresent
+
+  # Image pull secrets
+  imagePullSecrets: []
 
 # Control whether a test Pod manifest is generated when running helm template.
 # When using helm install, the test Pod is not submitted to the cluster so this
@@ -69,7 +79,7 @@ tests:
   # moduleSource: git::https://github.com/hashicorp/terraform-helm.git//test/module
 
 # If the TFE instance the operator talks to is using a private CA then CACerts
-# can be used to install a custom CA bundle in the operator's container that 
+# can be used to install a custom CA bundle in the operator's container that
 # will allow it to communicate with TFE.
 #
 # CACerts can be set like this:

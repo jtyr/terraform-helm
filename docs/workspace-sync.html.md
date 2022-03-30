@@ -28,6 +28,7 @@ the operator and resource definition.
 
 **How does the operator handle sensitive variables for Terraform Cloud?** There
 are two categories of sensitive variables related to Terraform Cloud:
+
 1. Terraform Cloud API Token: used to log in and execute runs for Terraform
    Cloud
 2. Workspace Sensitive Variables: secrets that execution requires to log into
@@ -44,7 +45,7 @@ Create the namespace where you will deploy the Operator, Secrets, and Workspace
 resources.
 
 ```shell
-$ kubectl create ns $NAMESPACE
+kubectl create ns $NAMESPACE
 ```
 
 ### Authentication
@@ -61,17 +62,20 @@ authentication.
 
 1. Insert the generated token (`$TERRAFORM_CLOUD_API_TOKEN`) into the
    text file formatted for Terraform credentials.
-   ```hcl
-   credentials app.terraform.io {
-     token = "$TERRAFORM_CLOUD_API_TOKEN"
-   }
-   ```
+
+     ```hcl
+     credentials app.terraform.io {
+       token = "$TERRAFORM_CLOUD_API_TOKEN"
+     }
+     ```
 
 1. Create a Kubernetes secret named `terraformrc` in the namespace.
    Reference the credentials file (`$FILENAME`) created in the previous step.
-   ```shell
-   $ kubectl create -n $NAMESPACE secret generic terraformrc --from-file=credentials=$FILENAME
-   ```
+
+     ```shell
+     kubectl create -n $NAMESPACE secret generic terraformrc --from-file=credentials=$FILENAME
+     ```
+
    Ensure `terraformrc` is the name of the secret, as it is the default secret
    name defined under the Helm value `syncWorkspace.terraformRC.secretName` in
    the `values.yaml` file.
@@ -98,8 +102,9 @@ Create the secret for the namespace that contains all of the sensitive variables
 required for the workspace.
 
 ```shell
-$ kubectl create -n $NAMESPACE secret generic workspacesecrets --from-literal=SECRET_KEY=$SECRET_KEY --from-literal=SECRET_KEY_2=$SECRET_KEY_2 ...
+kubectl create -n $NAMESPACE secret generic workspacesecrets --from-literal=SECRET_KEY=$SECRET_KEY --from-literal=SECRET_KEY_2=$SECRET_KEY_2 ...
 ```
+
 Ensure `workspacesecrets` is the name of the secret, as it is the default secret
 name defined under the Helm value `syncWorkspace.sensitiveVariables.secretName` in
 the `values.yaml` file.
@@ -124,7 +129,7 @@ Use the [Helm chart](https://github.com/hashicorp/terraform-helm) repository to
 deploy the Terraform Operator to the namespace you previously created.
 
 ```shell
-$ helm install -n $NAMESPACE operator ./terraform-helm
+helm install -n $NAMESPACE operator ./terraform-helm
 ```
 
 ## Create a Workspace
@@ -132,13 +137,11 @@ $ helm install -n $NAMESPACE operator ./terraform-helm
 The Workspace CustomResource defines a Terraform Cloud workspace, including
 variables, Terraform module, and outputs.
 
-For examples of Workspace CustomResource, see
-`example/`.
+For examples of Workspace CustomResource, see `example/`.
 
 The Workspace Spec includes the following parameters:
 
 1. `organization`: The Terraform Cloud organization you would like to use.
-
 1. `secretsMountPath`: The file path defined on the operator deployment that
    contains the workspace's secrets.
 
@@ -177,25 +180,27 @@ Variables for the workspace must equal the module's input variables.
 You can define Terraform variables in two ways:
 
 1. Inline
-   ```yaml
-   variables:
-     - key: hello
-       value: world
-       sensitive: false
-       environmentVariable: false
-   ```
 
-2. With a Kubernetes ConfigMap reference
-   ```yaml
-   variables:
-     - key: second_hello
-       valueFrom:
-         configMapKeyRef:
-           name: say-hello
-           key: to
-       sensitive: false
-       environmentVariable: false
-   ```
+     ```yaml
+     variables:
+       - key: hello
+         value: world
+         sensitive: false
+         environmentVariable: false
+     ```
+
+1. With a Kubernetes ConfigMap reference
+
+     ```yaml
+     variables:
+       - key: second_hello
+         valueFrom:
+           configMapKeyRef:
+             name: say-hello
+             key: to
+         sensitive: false
+         environmentVariable: false
+     ```
 
 The above Kubernetes definition renders to the following Terraform
 configuration.
@@ -235,7 +240,7 @@ variables:
 
 SSH keys can be used to [clone private modules](https://www.terraform.io/docs/cloud/workspaces/ssh-keys.html). To apply an SSH key to the workspace, specify `sshKeyID` in the Workspace Custom Resource. The SSH key ID can be found in the [Terraform Cloud API](https://www.terraform.io/docs/cloud/api/ssh-keys.html#list-ssh-keys).
 
-```
+```yaml
 apiVersion: app.terraform.io/v1alpha1
 kind: Workspace
 metadata:
@@ -269,21 +274,24 @@ output "my_pet" {
 The values of the outputs can be consumed from two places:
 
 1. Kubernetes status of the workspace.
-   ```shell
-   $ kubectl describe -n $NAMESPACE workspace $WORKSPACE_NAME
-   ```
+
+     ```shell
+     kubectl describe -n $NAMESPACE workspace $WORKSPACE_NAME
+     ```
+
 1. ConfigMap labeled `$WORKSPACE_NAME-outputs`. Kubernetes deployments can consume these
    output values.
-   ```shell
-   $ kubectl describe -n $NAMESPACE configmap $WORKSPACE_NAME-outputs
-   ```
+
+     ```shell
+     kubectl describe -n $NAMESPACE configmap $WORKSPACE_NAME-outputs
+     ```
 
 ### Deploy
 
 Deploy the workspace after configuring its module, variables, and outputs.
 
 ```shell
-$ kubectl apply -n $NAMESPACE -f workspace.yml
+kubectl apply -n $NAMESPACE -f workspace.yml
 ```
 
 ### Update a Workspace
@@ -304,7 +312,7 @@ trigger updates as the operator does not read the value for comparison.
 After updating the configuration, re-deploy the workspace.
 
 ```shell
-$ kubectl apply -n $NAMESPACE -f workspace.yml
+kubectl apply -n $NAMESPACE -f workspace.yml
 ```
 
 ### Delete a Workspace
@@ -328,7 +336,7 @@ When deleting the Workspace CustomResource, the command line will wait for a few
 moments.
 
 ```shell
-$ kubectl delete -n $NAMESPACE workspace.app.terraform.io/$WORKSPACE_NAME
+kubectl delete -n $NAMESPACE workspace.app.terraform.io/$WORKSPACE_NAME
 ```
 
 This is because the operator is running a
@@ -348,21 +356,21 @@ status. This provides the run ID and workspace ID to debug in the Terraform
 Cloud UI.
 
 ```shell
-$ kubectl describe -n $NAMESPACE workspace $WORKSPACE_NAME
+kubectl describe -n $NAMESPACE workspace $WORKSPACE_NAME
 ```
 
 When workspace creation, update, or deletion fails, check errors by
 examining the logs of the operator.
 
 ```shell
-$ kubectl logs -n $NAMESPACE $(kubectl get pods -n $NAMESPACE --selector "component=sync-workspace" -o jsonpath="{.items[0].metadata.name}")
+kubectl logs -n $NAMESPACE $(kubectl get pods -n $NAMESPACE --selector "component=sync-workspace" -o jsonpath="{.items[0].metadata.name}")
 ```
 
 If Terraform Cloud returns an error that the Terraform configuration is
 incorrect, examine the Terraform configuration at its ConfigMap.
 
 ```shell
-$ kubectl describe -n $NAMESPACE configmap $WORKSPACE_NAME
+kubectl describe -n $NAMESPACE configmap $WORKSPACE_NAME
 ```
 
 ## Internals
@@ -428,9 +436,9 @@ spec:
               path: ".terraformrc"
 ```
 
-Similar to the Terraform Cloud API Token, the Helm chart mounts
-them to the operator's deployment for use. It __does not__ mount workspace
-sensitive variables to the Workspace Custom Resource. This ensures that only the operator
+Similar to the Terraform Cloud API Token, the Helm chart mounts them to the
+operator's deployment for use. It **does not** mount workspace sensitive
+variables to the Workspace Custom Resource. This ensures that only the operator
 has access to read and create sensitive variables as part of the Terraform Cloud
 workspace.
 
